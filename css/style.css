@@ -1,0 +1,967 @@
+/* ============================================================
+   Literary Essay Collection — Style
+   Design language: warm paper, ink, literary journal aesthetic
+   ============================================================ */
+
+/* ---------- Custom Properties ---------- */
+:root {
+  /* Colors — warm paper & ink palette */
+  --color-paper:      #fbf9f3;
+  --color-surface:    #fffefb;
+  --color-ink:        #1f1a14;
+  --color-ink-soft:   #5c5347;
+  --color-ink-faint:  #9c9282;
+  --color-accent:     #8b3a3a;
+  --color-accent-dim: #6b2d2d;
+  --color-rule:       #d4c9b5;
+  --color-rule-light: #e8e2d5;
+  --color-overlay:    rgba(20, 16, 10, 0.78);
+  --color-danger:     #b55a5a;
+  --color-danger-dim: #8b3a3a;
+
+  /* Typography */
+  --font-serif:       'Cormorant Garamond', 'Noto Serif SC', 'STSong', Georgia, 'Times New Roman', serif;
+  --font-cjk:         'Noto Serif SC', 'STSong', 'Songti SC', serif;
+
+  /* Spacing & sizing */
+  --max-width:        680px;
+  --pad-page:         2rem;
+  --pad-card-v:       1.75rem;
+  --pad-card-h:       2rem;
+
+  /* Transitions */
+  --ease-out:         cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in:          cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  --dur-fast:         180ms;
+  --dur-normal:       280ms;
+  --dur-slow:         420ms;
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+  min-height: 100vh;
+  padding: 0 var(--pad-page) 6rem;
+  position: relative;
+}
+
+/* Subtle paper texture — CSS-only grain */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.003) 2px,
+      rgba(0, 0, 0, 0.003) 4px
+    );
+}
+
+/* ---------- Site Header ---------- */
+.site-header {
+  text-align: center;
+  padding: 4.5rem 0 1.5rem;
+  user-select: none;
+}
+
+.site-title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 1.3rem;
+  letter-spacing: 0.18em;
+  color: var(--color-ink);
+  line-height: 1.2;
+}
+
+.site-subtitle {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--color-ink-faint);
+  letter-spacing: 0.08em;
+  margin-top: 0.5rem;
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+  max-width: var(--max-width);
+  margin: 0 auto 2.5rem;
+  padding: 0;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-rule);
+  border-radius: 0;
+  outline: none;
+  transition: border-color var(--dur-normal) var(--ease-out);
+}
+
+.search-input::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+.search-input:focus {
+  border-bottom-color: var(--color-accent);
+}
+
+/* Search icon */
+.search-wrapper::before {
+  content: '⌕';
+  position: absolute;
+  left: 0.25rem;
+  top: 50%;
+  transform: translateY(-60%);
+  font-size: 1.1rem;
+  color: var(--color-ink-faint);
+  pointer-events: none;
+}
+
+/* ---------- Essay List ---------- */
+.essay-list {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+/* ---------- Essay Entry ---------- */
+.essay-entry {
+  padding: var(--pad-card-v) var(--pad-card-h);
+  border-bottom: 1px solid var(--color-rule-light);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              padding-left var(--dur-fast) var(--ease-out);
+  animation: fadeSlideIn var(--dur-slow) var(--ease-out) both;
+  position: relative;
+}
+
+.essay-entry:hover {
+  background-color: var(--color-surface);
+  padding-left: calc(var(--pad-card-h) + 8px);
+}
+
+.essay-entry:first-child {
+  border-top: 1px solid var(--color-rule-light);
+}
+
+.essay-entry-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.25rem;
+  color: var(--color-ink);
+  line-height: 1.5;
+  margin-bottom: 0.25rem;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.essay-entry:hover .essay-entry-title {
+  color: var(--color-accent);
+}
+
+.essay-entry-title.untitled {
+  font-style: italic;
+  color: var(--color-ink-faint);
+  font-weight: 300;
+}
+
+.essay-entry-excerpt {
+  font-family: var(--font-cjk), var(--font-serif);
+  font-weight: 300;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--color-ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.essay-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--color-ink-faint);
+}
+
+.essay-entry-meta .meta-sep {
+  font-style: normal;
+  color: var(--color-rule);
+}
+
+/* ---------- Empty State ---------- */
+.empty-state {
+  max-width: var(--max-width);
+  margin: 3rem auto 0;
+  text-align: center;
+  padding: 3rem 2rem;
+  animation: fadeIn var(--dur-slow) var(--ease-out);
+}
+
+.empty-quote {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: var(--color-ink-soft);
+  margin-bottom: 1.5rem;
+  border: none;
+  padding: 0;
+}
+
+.empty-quote p {
+  margin-bottom: 0.75rem;
+}
+
+.empty-quote footer {
+  font-size: 0.95rem;
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+.empty-hint {
+  font-family: var(--font-cjk), var(--font-serif);
+  font-weight: 300;
+  font-size: 1rem;
+  color: var(--color-ink-faint);
+}
+
+/* ---------- Floating Action Button ---------- */
+.fab {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-accent);
+  color: #fffefb;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(139, 58, 58, 0.25);
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.fab:hover {
+  transform: scale(1.06);
+  background: var(--color-accent-dim);
+  box-shadow: 0 4px 20px rgba(139, 58, 58, 0.35);
+}
+
+.fab:active {
+  transform: scale(0.96);
+  transition: transform 80ms var(--ease-in);
+}
+
+.fab-icon {
+  line-height: 1;
+  font-weight: 300;
+  font-size: 1.75rem;
+}
+
+/* ---------- Overlay ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-normal) var(--ease-out);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- Modal Base ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-normal) var(--ease-out);
+}
+
+.modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background: var(--color-surface);
+  border-radius: 6px;
+  box-shadow: 0 8px 40px rgba(20, 16, 10, 0.15);
+  position: relative;
+  transform: translateY(18px);
+  transition: transform var(--dur-normal) var(--ease-out);
+  overflow-y: auto;
+  max-height: 92vh;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rule) var(--color-surface);
+  overscroll-behavior: contain;
+}
+
+.modal.active .modal-content {
+  transform: translateY(0);
+}
+
+/* ---------- Modal Close Button ---------- */
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-ink-faint);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  transition: color var(--dur-fast) var(--ease-out);
+  z-index: 10;
+}
+
+.modal-close:hover {
+  color: var(--color-ink);
+}
+
+/* ---------- Writing Modal ---------- */
+.modal-writing .modal-content {
+  width: 90vw;
+  max-width: 740px;
+  padding: 0;
+  border-radius: 6px;
+}
+
+.modal-writing .reading-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.writing-body {
+  padding: 1.5rem 3rem 0;
+}
+
+.writing-title-input {
+  display: block;
+  width: 100%;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.65rem;
+  line-height: 1.4;
+  color: var(--color-ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin-bottom: 1.25rem;
+}
+
+.writing-title-input::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.writing-content-input {
+  display: block;
+  width: 100%;
+  min-height: 340px;
+  font-family: var(--font-cjk), var(--font-serif);
+  font-weight: 300;
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: var(--color-ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: vertical;
+  padding: 0;
+}
+
+.writing-content-input::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+.writing-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 3rem 1.5rem;
+  border-top: 1px solid var(--color-rule-light);
+  margin-top: 1rem;
+}
+
+.writing-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--color-ink-faint);
+}
+
+.writing-meta .meta-sep {
+  font-style: normal;
+  color: var(--color-rule);
+}
+
+/* ---------- Save Button ---------- */
+.btn-save {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 0.95rem;
+  color: var(--color-accent);
+  background: none;
+  border: 1px solid var(--color-accent);
+  padding: 0.45rem 1.75rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+  letter-spacing: 0.04em;
+}
+
+.btn-save:hover {
+  background: var(--color-accent);
+  color: #fffefb;
+}
+
+.btn-save:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Reading Modal ---------- */
+.modal-reading .modal-content {
+  width: 90vw;
+  max-width: 720px;
+  padding: 0;
+  border-radius: 6px;
+}
+
+/* ---------- Reading Topbar ---------- */
+.reading-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: calc(0.75rem + env(safe-area-inset-top, 0px)) 1rem 0.75rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-rule-light);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.modal-close-bar {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--color-ink-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  margin: -0.25rem 0;
+  transition: color var(--dur-fast) var(--ease-out);
+  line-height: 1;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.modal-close-bar:hover {
+  color: var(--color-ink);
+}
+
+.close-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.close-label {
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.reading-article {
+  padding: 2rem 3rem 1rem;
+}
+
+.reading-header {
+  margin-bottom: 2rem;
+}
+
+.reading-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.3;
+  color: var(--color-ink);
+  margin-bottom: 0.5rem;
+}
+
+/* Ornamental rule — section symbol in center */
+.ornamental-rule {
+  border: none;
+  height: 1px;
+  background: var(--color-rule);
+  margin: 1.5rem 0 2rem;
+  position: relative;
+  overflow: visible;
+}
+
+.ornamental-rule::after {
+  content: '§';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-surface);
+  padding: 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-rule);
+  font-weight: 300;
+}
+
+.reading-body {
+  font-family: var(--font-cjk), var(--font-serif);
+  font-weight: 300;
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: var(--color-ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Scrollbar — match surface background */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--color-rule);
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-faint);
+}
+
+.reading-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 1.5rem 3rem 2rem;
+}
+
+.reading-actions {
+  display: flex;
+  gap: 1.25rem;
+}
+
+/* ---------- Text Buttons ---------- */
+.btn-text {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: var(--color-ink-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: color var(--dur-fast) var(--ease-out);
+  letter-spacing: 0.03em;
+  position: relative;
+}
+
+.btn-text::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width var(--dur-fast) var(--ease-out);
+}
+
+.btn-text:hover {
+  color: var(--color-ink);
+}
+
+.btn-text:hover::after {
+  width: 100%;
+}
+
+.btn-text-danger {
+  color: var(--color-danger);
+}
+
+.btn-text-danger:hover {
+  color: var(--color-danger-dim);
+}
+
+/* ---------- Confirm Modal ---------- */
+.modal-confirm .modal-content {
+  width: 90vw;
+  max-width: 380px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.confirm-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.25rem;
+  color: var(--color-ink);
+  margin-bottom: 0.75rem;
+}
+
+.confirm-text {
+  font-family: var(--font-cjk), var(--font-serif);
+  font-weight: 300;
+  font-size: 0.95rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 2rem;
+}
+
+.confirm-password {
+  margin-bottom: 1.5rem;
+}
+
+.confirm-password-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 0.9rem;
+  color: var(--color-ink);
+  background: transparent;
+  border: 1px solid var(--color-rule);
+  border-radius: 2px;
+  outline: none;
+  text-align: center;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.confirm-password-input::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+.confirm-password-input:focus {
+  border-color: var(--color-accent);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 0.9rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-normal) var(--ease-out),
+              transform var(--dur-normal) var(--ease-out);
+  z-index: 999;
+  letter-spacing: 0.03em;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Loading Spinner ---------- */
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+.loader-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-rule);
+  margin: 0 4px;
+  animation: pulse 1.2s var(--ease-out) infinite;
+}
+
+.loader-dot:nth-child(2) { animation-delay: 0.15s; }
+.loader-dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* ---------- Keyframes ---------- */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.4); }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  :root {
+    --pad-page:   1rem;
+    --pad-card-h: 1.25rem;
+    --pad-card-v: 1.25rem;
+  }
+
+  html {
+    font-size: 93.75%; /* 15px base */
+  }
+
+  .site-header {
+    padding: 2.5rem 0 1rem;
+  }
+
+  .site-title {
+    font-size: 2rem;
+    letter-spacing: 0.14em;
+  }
+
+  .site-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .essay-entry {
+    padding: var(--pad-card-v) var(--pad-card-h);
+  }
+
+  .essay-entry-title {
+    font-size: 1.1rem;
+  }
+
+  .essay-entry-excerpt {
+    font-size: 0.875rem;
+  }
+
+  .fab {
+    bottom: 1.5rem;
+    right: 1.25rem;
+    width: 48px;
+    height: 48px;
+  }
+
+  .fab-icon {
+    font-size: 1.5rem;
+  }
+
+  /* Full-width modals on mobile */
+  .modal-writing .modal-content,
+  .modal-reading .modal-content {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modal-writing .modal-content {
+    padding: 0;
+  }
+
+  .writing-body {
+    padding: 1rem 1.25rem 0;
+  }
+
+  .modal-reading .modal-content {
+    padding: 0;
+  }
+
+  .reading-topbar {
+    padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
+  }
+
+  .reading-article {
+    padding: 1.5rem 1.25rem 1rem;
+  }
+
+  .writing-footer {
+    padding: 1rem 1.25rem 1.5rem;
+  }
+
+  .writing-content-input {
+    min-height: 260px;
+  }
+
+  .reading-title {
+    font-size: 1.5rem;
+  }
+
+  .reading-body {
+    font-size: 1rem;
+  }
+
+  .reading-footer {
+    padding: 1rem 1.25rem 2rem;
+  }
+
+  .reading-actions {
+    gap: 1rem;
+  }
+
+  .toast {
+    bottom: 1.25rem;
+    left: 1rem;
+    right: 1rem;
+    transform: translateY(20px);
+    text-align: center;
+  }
+
+  .toast.visible {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 380px) {
+  html {
+    font-size: 87.5%; /* 14px base */
+  }
+
+  .site-title {
+    font-size: 1.65rem;
+  }
+
+  .essay-entry-title {
+    font-size: 1rem;
+  }
+}
+
+/* ---------- Dark Mode ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper:      #1a1814;
+    --color-surface:    #211f1a;
+    --color-ink:        #e8e2d5;
+    --color-ink-soft:   #b8ae9c;
+    --color-ink-faint:  #6b6255;
+    --color-accent:     #c17d7d;
+    --color-accent-dim: #d49595;
+    --color-rule:       #3a3530;
+    --color-rule-light: #2c2722;
+    --color-overlay:    rgba(8, 6, 4, 0.82);
+    --color-danger:     #c17d7d;
+    --color-danger-dim: #d49595;
+  }
+
+  body::before {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px
+      );
+  }
+
+  .toast {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+
+  .modal-content {
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .fab {
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+    color: var(--color-paper);
+  }
+}

@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Something</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+/* ============================================================
+   MEMOIR (文学回忆录) STYLES — default :root variables
+   ============================================================ */
+:root {
+  --color-paper:      #fbf9f3;
+  --color-surface:    #fffefb;
+  --color-ink:        #1f1a14;
+  --color-ink-soft:   #5c5347;
+  --color-ink-faint:  #9c9282;
+  --color-accent:     #8b3a3a;
+  --color-accent-dim: #6b2d2d;
+  --color-rule:       #d4c9b5;
+  --color-rule-light: #e8e2d5;
+  --color-overlay:    rgba(20, 16, 10, 0.78);
+  --color-danger:     #b55a5a;
+  --color-danger-dim: #8b3a3a;
+  --font-serif:       'Cormorant Garamond', 'Noto Serif SC', 'STSong', Georgia, 'Times New Roman', serif;
+  --font-cjk:         'Noto Serif SC', 'STSong', 'Songti SC', serif;
+  --max-width:        680px;
+  --pad-page:         2rem;
+  --pad-card-v:       1.75rem;
+  --pad-card-h:       2rem;
+  --ease-out:         cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in:          cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  --dur-fast:         180ms;
+  --dur-normal:       280ms;
+  --dur-slow:         420ms;
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+  min-height: 100vh;
+  padding: 0 var(--pad-page) 6rem;
+  position: relative;
+  transition: background-color 0.5s, color 0.5s;
+}
+
+/* Paper texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.003) 2px,
+      rgba(0, 0, 0, 0.003) 4px
+    );
+}
+
+/* ========== MEMOIR VIEW ========== */
+#memoirView { display: block; }
+
+/* ---------- Site Header ---------- */
+.site-header { text-align: center; padding: 4.5rem 0 1.5rem; user-select: none; }
+.site-title {
+  font-family: var(--font-serif); font-weight: 300; font-size: 1.3rem;
+  letter-spacing: 0.18em; color: var(--color-ink); line-height: 1.2;
+}
+.site-subtitle {
+  font-family: var(--font-serif); font-weight: 300; font-style: italic;
+  font-size: 0.75rem; color: var(--color-ink-faint); letter-spacing: 0.08em; margin-top: 0.5rem;
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar { max-width: var(--max-width); margin: 0 auto 2.5rem; padding: 0; }
+.search-wrapper { position: relative; }
+.search-input {
+  width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem;
+  font-family: var(--font-serif); font-weight: 300; font-size: 0.95rem;
+  color: var(--color-ink); background: transparent; border: none;
+  border-bottom: 1px solid var(--color-rule); border-radius: 0; outline: none;
+  transition: border-color var(--dur-normal) var(--ease-out);
+}
+.search-input::placeholder { color: var(--color-ink-faint); font-style: italic; }
+.search-input:focus { border-bottom-color: var(--color-accent); }
+.search-wrapper::before {
+  content: '\2315'; position: absolute; left: 0.25rem; top: 50%;
+  transform: translateY(-60%); font-size: 1.1rem; color: var(--color-ink-faint); pointer-events: none;
+}
+
+/* ---------- Essay List ---------- */
+.essay-list { max-width: var(--max-width); margin: 0 auto; }
+
+.essay-entry {
+  padding: var(--pad-card-v) var(--pad-card-h);
+  border-bottom: 1px solid var(--color-rule-light);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              padding-left var(--dur-fast) var(--ease-out);
+  animation: fadeSlideIn var(--dur-slow) var(--ease-out) both;
+  position: relative;
+}
+.essay-entry:hover { background-color: var(--color-surface); padding-left: calc(var(--pad-card-h) + 8px); }
+.essay-entry:first-child { border-top: 1px solid var(--color-rule-light); }
+.essay-entry-title {
+  font-family: var(--font-serif); font-weight: 500; font-size: 1.25rem;
+  color: var(--color-ink); line-height: 1.5; margin-bottom: 0.25rem;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.essay-entry:hover .essay-entry-title { color: var(--color-accent); }
+.essay-entry-title.untitled { font-style: italic; color: var(--color-ink-faint); font-weight: 300; }
+.essay-entry-excerpt {
+  font-family: var(--font-cjk), var(--font-serif); font-weight: 300;
+  font-size: 0.95rem; line-height: 1.7; color: var(--color-ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; margin-bottom: 0.5rem;
+}
+
+/* ---------- Empty State (Memoir) ---------- */
+.empty-state {
+  max-width: var(--max-width); margin: 3rem auto 0; text-align: center;
+  padding: 3rem 2rem; animation: fadeIn var(--dur-slow) var(--ease-out);
+}
+.empty-quote {
+  font-family: var(--font-serif); font-weight: 300; font-style: italic;
+  font-size: 1.25rem; line-height: 1.8; color: var(--color-ink-soft);
+  margin-bottom: 1.5rem; border: none; padding: 0;
+}
+.empty-quote p { margin-bottom: 0.75rem; }
+.empty-quote footer { font-size: 0.95rem; color: var(--color-ink-faint); font-style: italic; }
+.empty-hint {
+  font-family: var(--font-cjk), var(--font-serif); font-weight: 300;
+  font-size: 1rem; color: var(--color-ink-faint);
+}
+
+/* ---------- FAB ---------- */
+.fab {
+  position: fixed; bottom: 2.5rem; right: 2.5rem;
+  width: 56px; height: 56px; border-radius: 50%; border: none;
+  background: var(--color-accent); color: #fffefb; font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(139, 58, 58, 0.25);
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+  z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; line-height: 1; font-weight: 300;
+}
+.fab:hover { transform: scale(1.06); background: var(--color-accent-dim); box-shadow: 0 4px 20px rgba(139, 58, 58, 0.35); }
+.fab:active { transform: scale(0.96); transition: transform 80ms var(--ease-in); }
+.fab-icon { line-height: 1; font-weight: 300; font-size: 1.75rem; }
+
+/* ---------- Switch Button ---------- */
+.fab-switch {
+  position: fixed; bottom: 2.5rem; right: 7rem;
+  width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--color-rule);
+  background: var(--color-surface); color: var(--color-ink-soft);
+  font-size: 1rem; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all var(--dur-fast) var(--ease-out);
+  z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; font-family: var(--font-cjk);
+}
+.fab-switch:hover {
+  border-color: var(--color-accent); color: var(--color-accent);
+  box-shadow: 0 4px 16px rgba(139, 58, 58, 0.15);
+  transform: scale(1.06);
+}
+.fab-switch:active { transform: scale(0.96); }
+
+/* ---------- Overlay ---------- */
+.overlay {
+  position: fixed; inset: 0; background: var(--color-overlay);
+  z-index: 100; opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-normal) var(--ease-out);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+}
+.overlay.active { opacity: 1; pointer-events: auto; }
+
+/* ---------- Modal Base ---------- */
+.modal {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-normal) var(--ease-out);
+}
+.modal.active { opacity: 1; pointer-events: auto; }
+.modal-content {
+  background: var(--color-surface); border-radius: 6px;
+  box-shadow: 0 8px 40px rgba(20, 16, 10, 0.15);
+  position: relative;
+  transform: translateY(18px);
+  transition: transform var(--dur-normal) var(--ease-out);
+  overflow-y: auto; max-height: 92vh;
+  scrollbar-width: thin; scrollbar-color: var(--color-rule) var(--color-surface);
+  overscroll-behavior: contain;
+}
+.modal.active .modal-content { transform: translateY(0); }
+
+/* ---------- Writing Modal ---------- */
+.modal-writing .modal-content { width: 90vw; max-width: 740px; padding: 0; border-radius: 6px; }
+.modal-writing .reading-topbar { position: sticky; top: 0; z-index: 10; }
+.writing-body { padding: 1.5rem 3rem 0; }
+.writing-title-input {
+  display: block; width: 100%; font-family: var(--font-serif); font-weight: 500;
+  font-size: 1.65rem; line-height: 1.4; color: var(--color-ink);
+  background: transparent; border: none; outline: none; padding: 0; margin-bottom: 1.25rem;
+}
+.writing-title-input::placeholder { color: var(--color-ink-faint); font-style: italic; font-weight: 300; }
+.writing-content-input {
+  display: block; width: 100%; min-height: 340px;
+  font-family: var(--font-cjk), var(--font-serif); font-weight: 300;
+  font-size: 1.05rem; line-height: 1.85; color: var(--color-ink);
+  background: transparent; border: none; outline: none; resize: vertical; padding: 0;
+}
+.writing-content-input::placeholder { color: var(--color-ink-faint); font-style: italic; }
+.writing-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 3rem 1.5rem; border-top: 1px solid var(--color-rule-light); margin-top: 1rem;
+}
+.writing-meta {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-family: var(--font-serif); font-weight: 300; font-style: italic;
+  font-size: 0.85rem; color: var(--color-ink-faint);
+}
+.writing-meta .meta-sep { font-style: normal; color: var(--color-rule); }
+
+.btn-save {
+  font-family: var(--font-serif); font-weight: 400; font-size: 0.95rem;
+  color: var(--color-accent); background: none; border: 1px solid var(--color-accent);
+  padding: 0.45rem 1.75rem; border-radius: 2px; cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  letter-spacing: 0.04em;
+}
+.btn-save:hover { background: var(--color-accent); color: #fffefb; }
+.btn-save:active { transform: scale(0.97); }
+
+/* ---------- Reading Modal ---------- */
+.modal-reading .modal-content { width: 90vw; max-width: 720px; padding: 0; border-radius: 6px; }
+.reading-topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center;
+  padding: calc(0.75rem + env(safe-area-inset-top, 0px)) 1rem 0.75rem;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-rule-light);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.modal-close-bar {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font-serif); font-size: 0.95rem; color: var(--color-ink-soft);
+  background: none; border: none; cursor: pointer;
+  padding: 0.5rem 0.75rem; margin: -0.25rem 0;
+  transition: color var(--dur-fast) var(--ease-out);
+  line-height: 1; min-height: 44px; min-width: 44px;
+}
+.modal-close-bar:hover { color: var(--color-ink); }
+.close-arrow { font-size: 1.1rem; line-height: 1; }
+.close-label { font-weight: 400; letter-spacing: 0.04em; }
+.reading-article { padding: 2rem 3rem 1rem; }
+.reading-header { margin-bottom: 2rem; }
+.reading-title {
+  font-family: var(--font-serif); font-weight: 400; font-size: 2rem;
+  line-height: 1.3; color: var(--color-ink); margin-bottom: 0.5rem;
+}
+.ornamental-rule {
+  border: none; height: 1px; background: var(--color-rule);
+  margin: 1.5rem 0 2rem; position: relative; overflow: visible;
+}
+.ornamental-rule::after {
+  content: '\00A7'; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); background: var(--color-surface);
+  padding: 0 0.75rem; font-size: 0.85rem; color: var(--color-rule); font-weight: 300;
+}
+.reading-body {
+  font-family: var(--font-cjk), var(--font-serif); font-weight: 300;
+  font-size: 1.1rem; line-height: 1.9; color: var(--color-ink);
+  white-space: pre-wrap; word-break: break-word;
+}
+.modal-content::-webkit-scrollbar { width: 6px; }
+.modal-content::-webkit-scrollbar-track { background: var(--color-surface); }
+.modal-content::-webkit-scrollbar-thumb { background: var(--color-rule); border-radius: 3px; }
+.modal-content::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
+.reading-footer { display: flex; align-items: center; justify-content: flex-end; padding: 1.5rem 3rem 2rem; }
+.reading-actions { display: flex; gap: 1.25rem; }
+
+/* ---------- Text Buttons ---------- */
+.btn-text {
+  font-family: var(--font-serif); font-weight: 400; font-size: 0.9rem;
+  color: var(--color-ink-soft); background: none; border: none; cursor: pointer;
+  padding: 0.25rem 0; transition: color var(--dur-fast) var(--ease-out);
+  letter-spacing: 0.03em; position: relative;
+}
+.btn-text::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 0; height: 1px; background: currentColor;
+  transition: width var(--dur-fast) var(--ease-out);
+}
+.btn-text:hover { color: var(--color-ink); }
+.btn-text:hover::after { width: 100%; }
+.btn-text-danger { color: var(--color-danger); }
+.btn-text-danger:hover { color: var(--color-danger-dim); }
+
+/* ---------- Confirm Modal ---------- */
+.modal-confirm .modal-content {
+  width: 90vw; max-width: 380px; padding: 2.5rem 2rem; text-align: center; border-radius: 6px;
+}
+.confirm-title {
+  font-family: var(--font-serif); font-weight: 500; font-size: 1.25rem;
+  color: var(--color-ink); margin-bottom: 0.75rem;
+}
+.confirm-text {
+  font-family: var(--font-cjk), var(--font-serif); font-weight: 300;
+  font-size: 0.95rem; color: var(--color-ink-soft); margin-bottom: 2rem;
+}
+.confirm-password { margin-bottom: 1.5rem; }
+.confirm-password-input {
+  width: 100%; padding: 0.6rem 0.75rem; font-family: var(--font-serif);
+  font-weight: 300; font-size: 0.9rem; color: var(--color-ink);
+  background: transparent; border: 1px solid var(--color-rule);
+  border-radius: 2px; outline: none; text-align: center;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.confirm-password-input::placeholder { color: var(--color-ink-faint); font-style: italic; }
+.confirm-password-input:focus { border-color: var(--color-accent); }
+.confirm-actions { display: flex; justify-content: center; gap: 2rem; }
+
+/* ---------- Memoir Toast ---------- */
+.toast {
+  position: fixed; bottom: 2.5rem; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-ink); color: var(--color-paper);
+  font-family: var(--font-serif); font-weight: 300; font-size: 0.9rem;
+  padding: 0.6rem 1.5rem; border-radius: 2px;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-normal) var(--ease-out),
+              transform var(--dur-normal) var(--ease-out);
+  z-index: 999; letter-spacing: 0.03em;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- Loading Spinner ---------- */
+.loader { display: flex; justify-content: center; padding: 4rem 0; }
+.loader-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--color-rule);
+  margin: 0 4px; animation: pulse 1.2s var(--ease-out) infinite;
+}
+.loader-dot:nth-child(2) { animation-delay: 0.15s; }
+.loader-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+/* ============================================================
+   TREEHOLE (空树洞) STYLES — scoped under body[data-view="treehole"]
+   ============================================================ */
+body[data-view="treehole"] {
+  --th-bg: #1a1c1b;
+  --th-surface: #222523;
+  --th-text: #ccc7bd;
+  --th-text-dim: #8a887c;
+  --th-accent: #c0a070;
+  --th-accent-soft: rgba(192, 160, 112, 0.12);
+  --th-card-white: #262926;
+  --th-card-cool: #242724;
+  --th-card-sage: #252825;
+  --th-card-mist: #232623;
+  --th-card-text: #c5c0b6;
+  --th-card-time: #7a7870;
+  --th-danger: #c08070;
+  --th-ring-color: rgba(160, 140, 110, 0.05);
+
+  font-family: 'Long Cang', 'Noto Serif SC', serif;
+  background: var(--th-bg);
+  color: var(--th-text);
+  padding: 0;
+}
+
+/* Remove memoir paper texture in treehole mode */
+body[data-view="treehole"]::before { display: none; }
+
+/* Tree Rings */
+.tree-rings {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; display: none;
+  background:
+    repeating-radial-gradient(
+      ellipse at 50% 32%,
+      transparent 0,
+      transparent 50px,
+      rgba(160, 140, 110, 0.06) 50px,
+      rgba(160, 140, 110, 0.06) 51px,
+      transparent 51px,
+      transparent 100px,
+      rgba(150, 130, 100, 0.05) 100px,
+      rgba(150, 130, 100, 0.05) 101px,
+      transparent 101px,
+      transparent 155px,
+      rgba(140, 120, 90, 0.04) 155px,
+      rgba(140, 120, 90, 0.04) 156px,
+      transparent 156px,
+      transparent 215px,
+      rgba(130, 110, 85, 0.03) 215px,
+      rgba(130, 110, 85, 0.03) 216px,
+      transparent 216px,
+      transparent 285px,
+      rgba(120, 100, 80, 0.025) 285px,
+      rgba(120, 100, 80, 0.025) 286px
+    );
+}
+body[data-view="treehole"] .tree-rings { display: block; }
+
+/* Ambient Orbs */
+.ambient-orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(120px); opacity: 0.4; display: none; }
+.orb-1 { width: 380px; height: 380px; top: -10%; left: 10%; background: radial-gradient(circle, rgba(180,150,100,0.25), transparent); animation: th-drift1 30s infinite ease-in-out; }
+.orb-2 { width: 300px; height: 300px; top: 50%; right: -8%; background: radial-gradient(circle, rgba(160,130,90,0.2), transparent); animation: th-drift2 24s infinite ease-in-out; }
+.orb-3 { width: 340px; height: 340px; bottom: -12%; left: 25%; background: radial-gradient(circle, rgba(140,110,80,0.18), transparent); animation: th-drift3 27s infinite ease-in-out; }
+body[data-view="treehole"] .ambient-orb { display: block; }
+
+@keyframes th-drift1 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(70px, -35px); }
+  66% { transform: translate(-25px, 45px); }
+}
+@keyframes th-drift2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-55px, -45px); }
+}
+@keyframes th-drift3 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(45px, 25px); }
+  66% { transform: translate(-35px, -55px); }
+}
+
+/* Particles */
+.particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; display: none; }
+body[data-view="treehole"] .particles { display: block; }
+.particle {
+  position: absolute; width: 2.5px; height: 2.5px; border-radius: 50%;
+  background: rgba(180, 150, 100, 0.45); animation: th-float 9s infinite ease-in-out;
+}
+.particle:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; animation-duration: 7s; }
+.particle:nth-child(2) { top: 25%; left: 75%; animation-delay: 1.2s; animation-duration: 8.5s; }
+.particle:nth-child(3) { top: 60%; left: 20%; animation-delay: 2.5s; animation-duration: 9s; }
+.particle:nth-child(4) { top: 70%; left: 85%; animation-delay: 0.6s; animation-duration: 7.5s; }
+.particle:nth-child(5) { top: 35%; left: 45%; animation-delay: 3s; animation-duration: 10s; }
+.particle:nth-child(6) { top: 80%; left: 55%; animation-delay: 1.8s; animation-duration: 8s; }
+.particle:nth-child(7) { top: 10%; left: 50%; animation-delay: 4s; animation-duration: 9.5s; }
+.particle:nth-child(8) { top: 45%; left: 30%; animation-delay: 2s; animation-duration: 7.8s; }
+
+@keyframes th-float {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+  20% { opacity: 0.7; }
+  50% { transform: translateY(-50px) translateX(15px); opacity: 0.25; }
+  80% { opacity: 0.08; }
+}
+
+/* Treehole App Container */
+#treeholeView .th-app {
+  position: relative; z-index: 1; max-width: 620px; margin: 0 auto; padding: 52px 24px 80px;
+}
+
+/* Treehole Header */
+#treeholeView .th-header { text-align: center; margin-bottom: 36px; }
+#treeholeView .th-title {
+  font-family: 'Liu Jian Mao Cao', cursive; font-size: 4rem; font-weight: 400;
+  letter-spacing: 0.22em; color: #d4c8a0;
+  text-shadow: 0 0 60px rgba(192, 160, 112, 0.2), 0 1px 3px rgba(0,0,0,0.3);
+  margin-bottom: 6px; line-height: 1.4;
+}
+#treeholeView .th-subtitle {
+  font-family: 'Long Cang', serif; font-size: 0.95rem; font-weight: 400;
+  color: var(--th-text-dim); letter-spacing: 0.14em;
+}
+#treeholeView .th-stats {
+  margin-top: 14px; font-size: 0.82rem; color: var(--th-text-dim);
+  letter-spacing: 0.08em; opacity: 0.65;
+}
+#treeholeView .th-stats span { color: var(--th-accent); font-weight: 400; }
+
+/* Treehole Search */
+#treeholeView .th-search-wrap { position: relative; margin-bottom: 32px; }
+#treeholeView .th-search-icon {
+  position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+  color: #8a8070; font-size: 0.95rem; pointer-events: none; transition: color 0.3s;
+}
+#treeholeView .th-search-hint {
+  position: absolute; right: 48px; top: 50%; transform: translateY(-50%);
+  font-size: 0.7rem; color: #6a6058; pointer-events: none; letter-spacing: 0.04em;
+  opacity: 1; transition: opacity 0.3s;
+}
+#treeholeView .th-search-wrap:focus-within .th-search-hint,
+#treeholeView .th-search-hint.hidden { opacity: 0; }
+#treeholeView .th-search-input {
+  width: 100%; padding: 12px 20px 12px 46px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(160, 140, 110, 0.15);
+  border-radius: 28px; color: var(--th-text);
+  font-family: inherit; font-size: 0.9rem; font-weight: 400;
+  letter-spacing: 0.06em; outline: none; backdrop-filter: blur(6px);
+  transition: all 0.4s;
+}
+#treeholeView .th-search-input::placeholder { color: rgba(160, 140, 110, 0.3); }
+#treeholeView .th-search-input:focus {
+  border-color: rgba(192, 160, 112, 0.4); background: rgba(255,255,255,0.1);
+  box-shadow: 0 0 28px rgba(192, 160, 112, 0.08), 0 2px 8px rgba(0,0,0,0.2);
+}
+#treeholeView .th-search-wrap:focus-within .th-search-icon,
+#treeholeView .th-search-wrap:focus-within .th-search-icon { color: var(--th-accent); }
+#treeholeView .th-search-clear {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--th-text-dim); cursor: pointer;
+  font-size: 1.1rem; padding: 4px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+#treeholeView .th-search-clear.visible { opacity: 0.5; pointer-events: auto; }
+#treeholeView .th-search-clear:hover { opacity: 1; color: #c0a070; }
+
+/* Treehole Whisper Input */
+#treeholeView .th-whisper-section { margin-bottom: 40px; }
+#treeholeView .th-whisper-area {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(160, 140, 110, 0.12);
+  border-radius: 18px; padding: 20px 22px; backdrop-filter: blur(8px);
+  box-shadow: inset 0 2px 12px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.5s;
+}
+#treeholeView .th-whisper-area:focus-within {
+  border-color: rgba(192, 160, 112, 0.35); background: rgba(255,255,255,0.08);
+  box-shadow: inset 0 2px 14px rgba(0,0,0,0.2), 0 0 32px rgba(192, 160, 112, 0.1);
+}
+#treeholeView .th-whisper-textarea {
+  width: 100%; min-height: 80px; max-height: 240px;
+  background: transparent; border: none; outline: none;
+  color: #ccc7bd; font-family: inherit; font-size: 0.95rem;
+  font-weight: 400; line-height: 2; letter-spacing: 0.05em; resize: none;
+}
+#treeholeView .th-whisper-textarea::placeholder { color: rgba(180, 160, 130, 0.3); }
+#treeholeView .th-whisper-actions {
+  display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+  margin-top: 8px; opacity: 0; transform: translateY(-4px);
+  pointer-events: none; transition: all 0.35s;
+}
+#treeholeView .th-whisper-actions.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+#treeholeView .th-char-count { font-size: 0.75rem; color: var(--th-text-dim); letter-spacing: 0.04em; }
+#treeholeView .th-whisper-submit {
+  padding: 8px 22px; background: transparent; border: 1px solid rgba(192, 160, 112, 0.4);
+  border-radius: 20px; color: #c0a070; font-family: inherit;
+  font-size: 0.85rem; font-weight: 400; letter-spacing: 0.1em;
+  cursor: pointer; transition: all 0.3s;
+}
+#treeholeView .th-whisper-submit:hover {
+  background: rgba(192, 160, 112, 0.1); border-color: rgba(192, 160, 112, 0.6);
+  box-shadow: 0 0 20px rgba(192, 160, 112, 0.12);
+}
+
+/* Treehole Entries */
+#treeholeView .th-entries { display: flex; flex-direction: column; gap: 18px; }
+#treeholeView .th-entry-card {
+  padding: 24px 28px; border-radius: 4px 18px 4px 18px;
+  position: relative; cursor: default;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.15);
+  animation: th-cardIn 0.5s ease-out;
+  transition: transform 0.35s, box-shadow 0.35s;
+}
+#treeholeView .th-entry-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.2);
+}
+#treeholeView .th-entry-card.dimmed { opacity: 0.22; filter: grayscale(0.4) blur(0.5px); }
+#treeholeView .th-entry-card[data-tone="white"] { background: linear-gradient(170deg, #2a2d2a 0%, #262926 45%, #222522 100%); }
+#treeholeView .th-entry-card[data-tone="cool"]  { background: linear-gradient(170deg, #282b28 0%, #242724 45%, #202320 100%); }
+#treeholeView .th-entry-card[data-tone="sage"]  { background: linear-gradient(170deg, #292c29 0%, #252825 45%, #212421 100%); }
+#treeholeView .th-entry-card[data-tone="mist"]  { background: linear-gradient(170deg, #2a2d29 0%, #262a26 45%, #222622 100%); }
+#treeholeView .th-entry-content {
+  color: var(--th-card-text); font-size: 0.95rem; line-height: 2;
+  letter-spacing: 0.04em; white-space: pre-wrap; word-break: break-word;
+}
+#treeholeView .th-entry-content mark {
+  background: rgba(192, 160, 112, 0.25); color: #e8d8a0; border-radius: 2px; padding: 1px 3px;
+}
+#treeholeView .th-entry-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(160, 140, 110, 0.1);
+}
+#treeholeView .th-entry-time {
+  font-size: 0.78rem; color: var(--th-card-time); letter-spacing: 0.05em; font-weight: 400; cursor: default;
+}
+#treeholeView .th-entry-delete {
+  background: none; border: none; color: rgba(180, 160, 140, 0.25);
+  cursor: pointer; font-family: inherit; font-size: 0.75rem;
+  letter-spacing: 0.06em; padding: 4px 10px; border-radius: 12px;
+  transition: all 0.25s;
+}
+#treeholeView .th-entry-delete:hover { color: var(--th-danger); background: rgba(192, 128, 112, 0.1); }
+#treeholeView .th-entry-delete.confirm { color: var(--th-danger); font-weight: 700; }
+
+/* Treehole Empty State */
+#treeholeView .th-empty-state { text-align: center; padding: 80px 20px; display: none; }
+#treeholeView .th-empty-state.visible { display: block; }
+#treeholeView .th-empty-icon { font-size: 3.5rem; margin-bottom: 20px; opacity: 0.45; }
+#treeholeView .th-empty-title {
+  font-size: 1.15rem; color: var(--th-text-dim); font-weight: 400; letter-spacing: 0.12em; margin-bottom: 8px;
+}
+#treeholeView .th-empty-sub {
+  font-size: 0.85rem; color: rgba(180, 160, 130, 0.3); font-weight: 400; letter-spacing: 0.08em;
+}
+
+/* Treehole Toast */
+#treeholeView .th-toast {
+  position: fixed; bottom: 36px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(40, 38, 32, 0.9); border: 1px solid rgba(192, 160, 112, 0.25);
+  color: var(--th-text); padding: 10px 24px; border-radius: 24px;
+  font-family: inherit; font-size: 0.85rem; letter-spacing: 0.06em;
+  z-index: 100; opacity: 0; pointer-events: none; transition: all 0.4s;
+  backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+#treeholeView .th-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+#treeholeView .th-toast .th-undo-btn {
+  background: none; border: none; color: var(--th-accent); font-family: inherit;
+  font-size: 0.85rem; cursor: pointer; margin-left: 8px; letter-spacing: 0.06em;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* Treehole Scrollbar */
+body[data-view="treehole"] ::-webkit-scrollbar { width: 5px; }
+body[data-view="treehole"] ::-webkit-scrollbar-track { background: transparent; }
+body[data-view="treehole"] ::-webkit-scrollbar-thumb { background: rgba(192, 160, 112, 0.15); border-radius: 10px; }
+body[data-view="treehole"] ::-webkit-scrollbar-thumb:hover { background: rgba(192, 160, 112, 0.3); }
+
+@keyframes th-cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Switch button treehole mode override */
+body[data-view="treehole"] .fab-switch {
+  border-color: rgba(192, 160, 112, 0.4); background: rgba(30, 30, 28, 0.9);
+  color: var(--th-accent);
+}
+body[data-view="treehole"] .fab-switch:hover {
+  border-color: var(--th-accent); box-shadow: 0 0 20px rgba(192, 160, 112, 0.15);
+}
+
+/* Hide memoir-specific elements in treehole mode */
+body[data-view="treehole"] #memoirView { display: none; }
+body[data-view="treehole"] #newEssayBtn { display: none; }
+body[data-view="treehole"] .toast { display: none; }
+
+/* Hide treehole elements in memoir mode */
+body[data-view="memoir"] #treeholeView { display: none; }
+body[data-view="memoir"] .tree-rings,
+body[data-view="memoir"] .ambient-orb,
+body[data-view="memoir"] .particles { display: none; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  :root { --pad-page: 1rem; --pad-card-h: 1.25rem; --pad-card-v: 1.25rem; }
+  html { font-size: 93.75%; }
+  .site-header { padding: 2.5rem 0 1rem; }
+  .site-title { font-size: 2rem; letter-spacing: 0.14em; }
+  .site-subtitle { font-size: 0.9rem; }
+  .essay-entry { padding: var(--pad-card-v) var(--pad-card-h); }
+  .essay-entry-title { font-size: 1.1rem; }
+  .essay-entry-excerpt { font-size: 0.875rem; }
+  .fab { bottom: 1.5rem; right: 1.25rem; width: 48px; height: 48px; }
+  .fab-icon { font-size: 1.5rem; }
+  .fab-switch { bottom: 1.5rem; right: 5.5rem; width: 40px; height: 40px; }
+
+  .modal-writing .modal-content,
+  .modal-reading .modal-content {
+    width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0;
+  }
+  .writing-body { padding: 1rem 1.25rem 0; }
+  .reading-topbar { padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem; }
+  .reading-article { padding: 1.5rem 1.25rem 1rem; }
+  .writing-footer { padding: 1rem 1.25rem 1.5rem; }
+  .writing-content-input { min-height: 260px; }
+  .reading-title { font-size: 1.5rem; }
+  .reading-body { font-size: 1rem; }
+  .reading-footer { padding: 1rem 1.25rem 2rem; }
+  .reading-actions { gap: 1rem; }
+  .toast { bottom: 1.25rem; left: 1rem; right: 1rem; transform: translateY(20px); text-align: center; }
+  .toast.visible { transform: translateY(0); }
+
+  #treeholeView .th-app { padding: 36px 16px 60px; }
+  #treeholeView .th-title { font-size: 2.6rem; letter-spacing: 0.16em; }
+  #treeholeView .th-entry-card { padding: 18px 20px; border-radius: 2px 14px 2px 14px; }
+  #treeholeView .th-entry-content { font-size: 0.9rem; line-height: 1.9; }
+  #treeholeView .th-whisper-area { padding: 16px; }
+  #treeholeView .th-whisper-textarea { font-size: 0.9rem; min-height: 68px; }
+  #treeholeView .th-search-hint { display: none; }
+}
+
+@media (max-width: 380px) {
+  html { font-size: 87.5%; }
+  .site-title { font-size: 1.65rem; }
+  .essay-entry-title { font-size: 1rem; }
+}
+
+/* ---------- Dark Mode for Memoir ---------- */
+@media (prefers-color-scheme: dark) {
+  body[data-view="memoir"] {
+    --color-paper:      #1a1814;
+    --color-surface:    #211f1a;
+    --color-ink:        #e8e2d5;
+    --color-ink-soft:   #b8ae9c;
+    --color-ink-faint:  #6b6255;
+    --color-accent:     #c17d7d;
+    --color-accent-dim: #d49595;
+    --color-rule:       #3a3530;
+    --color-rule-light: #2c2722;
+    --color-overlay:    rgba(8, 6, 4, 0.82);
+    --color-danger:     #c17d7d;
+    --color-danger-dim: #d49595;
+  }
+  body[data-view="memoir"]::before {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px
+      );
+  }
+  body[data-view="memoir"] .toast {
+    background: var(--color-surface); color: var(--color-ink);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+  body[data-view="memoir"] .modal-content {
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  }
+  body[data-view="memoir"] .fab {
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5); color: var(--color-paper);
+  }
+}
+</style>
+</head>
+<body data-view="memoir">
+
+  <!-- ==================== MEMOIR VIEW (文学回忆录) ==================== -->
+  <div id="memoirView">
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Header -->
+    <header class="site-header">
+      <h1 class="site-title">文学回忆录</h1>
+      <p class="site-subtitle">Essays &amp; Fragments</p>
+    </header>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrapper">
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索随笔..." autocomplete="off">
+      </div>
+    </div>
+
+    <!-- Essay List -->
+    <main class="essay-list" id="essayList"></main>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <blockquote class="empty-quote">
+        <p>在白纸上留下痕迹，<br>让瞬间成为永恒。</p>
+        <footer>Writing is leaving traces on blank paper,<br>turning moments into permanence.</footer>
+      </blockquote>
+      <p class="empty-hint">······</p>
+    </div>
+
+    <!-- Writing Modal -->
+    <div class="modal modal-writing" id="writingModal" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <div class="reading-topbar">
+          <button class="modal-close modal-close-bar" id="cancelWriting" aria-label="关闭">
+            <span class="close-arrow">&larr;</span>
+            <span class="close-label">返回</span>
+          </button>
+        </div>
+        <div class="writing-body">
+          <input type="text" id="essayTitle" class="writing-title-input" placeholder="标题" autocomplete="off">
+          <textarea id="essayContent" class="writing-content-input" placeholder="开始写作..." rows="1"></textarea>
+        </div>
+        <div class="writing-footer">
+          <div class="writing-meta" id="writingMeta">
+            <span class="meta-item">0 字</span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item">1 分钟阅读</span>
+          </div>
+          <button class="btn-save" id="saveEssay">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reading Modal -->
+    <div class="modal modal-reading" id="readingModal" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <div class="reading-topbar">
+          <button class="modal-close modal-close-bar" id="closeReading" aria-label="关闭">
+            <span class="close-arrow">&larr;</span>
+            <span class="close-label">返回</span>
+          </button>
+        </div>
+        <article class="reading-article">
+          <header class="reading-header">
+            <h2 class="reading-title" id="readingTitle"></h2>
+          </header>
+          <hr class="ornamental-rule">
+          <div class="reading-body" id="readingBody"></div>
+        </article>
+        <div class="reading-footer">
+          <div class="reading-actions">
+            <button class="btn-text" id="editEssay">编辑</button>
+            <button class="btn-text btn-text-danger" id="deleteEssay">删除</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal modal-confirm" id="confirmModal" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <p class="confirm-title">确认删除</p>
+        <p class="confirm-text">此操作无法撤销，是否继续？</p>
+        <div class="confirm-password">
+          <input type="password" id="deletePassword" class="confirm-password-input" placeholder="请输入删除密码" autocomplete="off">
+        </div>
+        <div class="confirm-actions">
+          <button class="btn-text" id="cancelDelete">取消</button>
+          <button class="btn-text btn-text-danger" id="confirmDelete">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memoir Toast -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <!-- ==================== TREEHOLE VIEW (空树洞) ==================== -->
+  <div id="treeholeView">
+    <!-- Background effects -->
+    <div class="tree-rings"></div>
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+    <div class="particles">
+      <div class="particle"></div><div class="particle"></div>
+      <div class="particle"></div><div class="particle"></div>
+      <div class="particle"></div><div class="particle"></div>
+      <div class="particle"></div><div class="particle"></div>
+    </div>
+
+    <div class="th-app">
+      <header class="th-header">
+        <h1 class="th-title">空 树 洞</h1>
+        <p class="th-subtitle">Listening</p>
+        <p class="th-stats">树洞藏着 <span id="treeholeEntryCount">0</span> 份心事</p>
+      </header>
+
+      <div class="th-search-wrap">
+        <span class="th-search-icon">&#9906;</span>
+        <input class="th-search-input" id="treeholeSearchInput" type="text" placeholder="…" autocomplete="off">
+        <span class="th-search-hint" id="treeholeSearchHint"></span>
+        <button class="th-search-clear" id="treeholeSearchClear" aria-label="清除搜索">&times;</button>
+      </div>
+
+      <div class="th-whisper-section">
+        <div class="th-whisper-area">
+          <textarea class="th-whisper-textarea" id="treeholeWhisperInput" placeholder="轻轻诉说…" maxlength="5000" rows="2"></textarea>
+          <div class="th-whisper-actions" id="treeholeWhisperActions">
+            <span class="th-char-count" id="treeholeCharCount">0 / 5000</span>
+            <button class="th-whisper-submit" id="treeholeWhisperSubmit">放 入 树 洞</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="th-entries" id="treeholeEntries"></div>
+
+      <!-- Empty State -->
+      <div class="th-empty-state" id="treeholeEmptyState">
+        <div class="th-empty-icon">&#9711;</div>
+        <div class="th-empty-title">树洞是空的</div>
+        <div class="th-empty-sub">写下第一份心事，放入树洞</div>
+      </div>
+
+      <div class="th-toast" id="treeholeToast"></div>
+    </div>
+  </div>
+
+  <!-- ==================== FAB BUTTONS ==================== -->
+  <button class="fab-switch" id="switchToTreehole" aria-label="切换到空树洞" title="空树洞">洞</button>
+  <button class="fab-switch" id="switchToMemoir" aria-label="切换到文学回忆录" title="文学回忆录" style="display:none;">&#8592;</button>
+  <button class="fab" id="newEssayBtn" aria-label="新建随笔" title="新建随笔">
+    <span class="fab-icon">+</span>
+  </button>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script>
+/* ============================================================
+   MEMOIR SUPABASE CLIENT & CRUD
+   ============================================================ */
+const MEMOIR_SUPABASE_URL = 'https://klkktsigjelowtiqssho.supabase.co';
+const MEMOIR_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtsa2t0c2lnamVsb3d0aXFzc2hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NTE1NTgsImV4cCI6MjA5NjEyNzU1OH0.KDPBA0yLahvR3EgANiBRdYsXmi1_MgjitDzF0mKf5xc';
+
+const memoirDb = supabase.createClient(MEMOIR_SUPABASE_URL, MEMOIR_SUPABASE_KEY);
+
+async function fetchEssays() {
+  const { data, error } = await memoirDb
+    .from('essays')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+async function saveEssay({ title, content, wordCount, charCount }) {
+  const { data, error } = await memoirDb
+    .from('essays')
+    .insert([{ title, content, word_count: wordCount, char_count: charCount }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function updateEssay(id, { title, content, wordCount, charCount }) {
+  const { data, error } = await memoirDb
+    .from('essays')
+    .update({ title, content, word_count: wordCount, char_count: charCount })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function deleteEssay(id) {
+  const { error } = await memoirDb
+    .from('essays')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
+
+/* ============================================================
+   MEMOIR UTILS
+   ============================================================ */
+function countWords(text) {
+  if (!text || !text.trim()) return 0;
+  let count = 0;
+  let inLatin = false;
+  let latinWord = '';
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    const isCJK =
+      (cp >= 0x4E00 && cp <= 0x9FFF) || (cp >= 0x3400 && cp <= 0x4DBF) ||
+      (cp >= 0x20000 && cp <= 0x2A6DF) || (cp >= 0xF900 && cp <= 0xFAFF) ||
+      (cp >= 0x2F800 && cp <= 0x2FA1F) || (cp >= 0x3000 && cp <= 0x303F) ||
+      (cp >= 0xFF00 && cp <= 0xFFEF) || (cp >= 0x2E80 && cp <= 0x2EFF) ||
+      (cp >= 0x31C0 && cp <= 0x31EF);
+    const isLatin = (cp >= 0x0041 && cp <= 0x005A) || (cp >= 0x0061 && cp <= 0x007A) ||
+                    (cp >= 0x00C0 && cp <= 0x024F) || cp === 0x0027;
+    const isDigit = cp >= 0x0030 && cp <= 0x0039;
+    const isSpace = cp === 0x0020 || cp === 0x000A || cp === 0x000D || cp === 0x0009;
+    if (isCJK) {
+      if (inLatin && latinWord) { count++; latinWord = ''; inLatin = false; }
+      count++;
+    } else if (isLatin || isDigit) {
+      inLatin = true; latinWord += ch;
+    } else if (isSpace) {
+      if (inLatin && latinWord) { count++; latinWord = ''; }
+      inLatin = false;
+    } else {
+      if (inLatin && latinWord) { count++; latinWord = ''; }
+      inLatin = false;
+    }
+  }
+  if (inLatin && latinWord) count++;
+  return count;
+}
+
+function countChars(text) {
+  if (!text) return 0;
+  let count = 0;
+  for (const ch of text) {
+    if (ch !== ' ' && ch !== '\n' && ch !== '\r' && ch !== '\t') count++;
+  }
+  return count;
+}
+
+function readingTime(wordCount) {
+  return Math.max(1, Math.ceil(wordCount / 250));
+}
+
+function formatDate(isoString) {
+  const d = new Date(isoString);
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+function formatDateTime(isoString) {
+  const d = new Date(isoString);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${hh}:${mm}`;
+}
+
+function excerpt(text, maxLen) {
+  if (!text || text.length <= maxLen) return text || '';
+  const slice = text.slice(0, maxLen);
+  const breakIdx = Math.max(
+    slice.lastIndexOf('。'), slice.lastIndexOf('！'),
+    slice.lastIndexOf('？'), slice.lastIndexOf('\n'),
+    slice.lastIndexOf('. '), slice.lastIndexOf('! '), slice.lastIndexOf('? ')
+  );
+  if (breakIdx > maxLen * 0.5) return slice.slice(0, breakIdx + 1);
+  const lastSpace = slice.lastIndexOf(' ');
+  if (lastSpace > maxLen * 0.5) return slice.slice(0, lastSpace);
+  return slice + '…';
+}
+
+function filterEssays(essays, query) {
+  if (!query || !query.trim()) return essays;
+  const q = query.toLowerCase().trim();
+  return essays.filter(e =>
+    (e.title && e.title.toLowerCase().includes(q)) ||
+    (e.content && e.content.toLowerCase().includes(q))
+  );
+}
+
+function debounce(fn, delay) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+/* ============================================================
+   MEMOIR UI
+   ============================================================ */
+let modalHistoryPushed = false;
+
+function pushModalState() {
+  if (!modalHistoryPushed) {
+    history.pushState({ modal: true }, '');
+    modalHistoryPushed = true;
+  }
+}
+
+function popModalState() {
+  if (modalHistoryPushed) {
+    modalHistoryPushed = false;
+    history.back();
+  }
+}
+
+function closeAllModals() {
+  modalHistoryPushed = false;
+  document.getElementById('readingModal').classList.remove('active');
+  document.getElementById('writingModal').classList.remove('active');
+  document.getElementById('confirmModal').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  delete document.getElementById('writingModal').dataset.editId;
+  delete document.getElementById('confirmModal').dataset.essayId;
+}
+
+window.addEventListener('popstate', () => {
+  if (modalHistoryPushed) closeAllModals();
+});
+
+function renderEssayList(essays) {
+  const container = document.getElementById('essayList');
+  const emptyState = document.getElementById('emptyState');
+  container.innerHTML = '';
+  if (!essays || essays.length === 0) {
+    container.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
+  }
+  container.style.display = 'block';
+  emptyState.style.display = 'none';
+  essays.forEach((essay, idx) => {
+    const card = createEssayEntry(essay, idx);
+    container.appendChild(card);
+  });
+}
+
+function createEssayEntry(essay, index) {
+  const entry = document.createElement('article');
+  entry.className = 'essay-entry';
+  entry.style.animationDelay = `${index * 60}ms`;
+  entry.dataset.id = essay.id;
+  const title = essay.title && essay.title.trim() ? essay.title.trim() : '无标题';
+  const titleClass = title === '无标题' ? 'untitled' : '';
+  const excerptText = excerpt(essay.content, 150);
+  entry.innerHTML = `
+    <h3 class="essay-entry-title ${titleClass}">${escapeHTML(title)}</h3>
+    ${excerptText ? `<p class="essay-entry-excerpt">${escapeHTML(excerptText)}</p>` : ''}
+  `;
+  entry.addEventListener('click', () => showReadingModal(essay));
+  return entry;
+}
+
+function showReadingModal(essay) {
+  document.getElementById('readingTitle').textContent =
+    essay.title && essay.title.trim() ? essay.title.trim() : '无标题';
+  document.getElementById('readingBody').textContent = essay.content;
+  document.getElementById('readingModal').classList.add('active');
+  document.getElementById('overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('readingModal').dataset.essayId = essay.id;
+  document.getElementById('readingModal').dataset.essayTitle = essay.title || '';
+  document.getElementById('readingModal').dataset.essayContent = essay.content || '';
+  pushModalState();
+}
+
+function hideReadingModal() {
+  document.getElementById('readingModal').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  popModalState();
+}
+
+function closeReadingModalSilent() {
+  document.getElementById('readingModal').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+  modalHistoryPushed = false;
+}
+
+function showWritingModal(essay) {
+  const titleInput = document.getElementById('essayTitle');
+  const contentInput = document.getElementById('essayContent');
+  if (essay) {
+    titleInput.value = essay.title || document.getElementById('readingModal').dataset.essayTitle || '';
+    contentInput.value = essay.content || document.getElementById('readingModal').dataset.essayContent || '';
+    document.getElementById('writingModal').dataset.editId = essay.id || document.getElementById('readingModal').dataset.essayId || '';
+  } else {
+    titleInput.value = '';
+    contentInput.value = '';
+    delete document.getElementById('writingModal').dataset.editId;
+  }
+  updateWritingMetadata();
+  document.getElementById('writingModal').classList.add('active');
+  document.getElementById('overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  pushModalState();
+  setTimeout(() => contentInput.focus(), 150);
+}
+
+function hideWritingModal() {
+  document.getElementById('writingModal').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  delete document.getElementById('writingModal').dataset.editId;
+  popModalState();
+}
+
+function updateWritingMetadata() {
+  const title = document.getElementById('essayTitle').value || '';
+  const content = document.getElementById('essayContent').value || '';
+  const fullText = title + '\n' + content;
+  const wc = countWords(fullText);
+  const cc = countChars(fullText);
+  document.getElementById('writingMeta').innerHTML = `
+    <span class="meta-item">${cc.toLocaleString()} 字符</span>
+    <span class="meta-sep">·</span>
+    <span class="meta-item">${wc.toLocaleString()} 词</span>
+  `;
+}
+
+function showConfirmModal(essayId) {
+  document.getElementById('confirmModal').dataset.essayId = essayId;
+  document.getElementById('confirmModal').classList.add('active');
+  document.getElementById('overlay').classList.add('active');
+  document.getElementById('deletePassword').value = '';
+  pushModalState();
+}
+
+function hideConfirmModal() {
+  document.getElementById('confirmModal').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  delete document.getElementById('confirmModal').dataset.essayId;
+  popModalState();
+}
+
+let memoirToastTimer;
+function showMemoirToast(message, duration) {
+  duration = duration || 2200;
+  const toast = document.getElementById('toast');
+  clearTimeout(memoirToastTimer);
+  toast.textContent = message;
+  toast.classList.add('visible');
+  memoirToastTimer = setTimeout(() => toast.classList.remove('visible'), duration);
+}
+
+function showLoading() {
+  const container = document.getElementById('essayList');
+  container.innerHTML = `
+    <div class="loader">
+      <div class="loader-dot"></div>
+      <div class="loader-dot"></div>
+      <div class="loader-dot"></div>
+    </div>
+  `;
+  container.style.display = 'block';
+  document.getElementById('emptyState').style.display = 'none';
+}
+
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ============================================================
+   MEMOIR APP CONTROLLER
+   ============================================================ */
+let essays = [];
+
+async function memoirInit() {
+  showLoading();
+  try {
+    essays = await fetchEssays();
+    renderEssayList(essays);
+  } catch (err) {
+    console.error('Failed to load essays:', err);
+    showMemoirToast('失败');
+    document.getElementById('essayList').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+  }
+  memoirBindEvents();
+}
+
+function memoirBindEvents() {
+  document.getElementById('newEssayBtn').addEventListener('click', () => showWritingModal(null));
+  document.getElementById('saveEssay').addEventListener('click', handleSave);
+  document.getElementById('cancelWriting').addEventListener('click', hideWritingModal);
+  document.getElementById('essayContent').addEventListener('input', updateWritingMetadata);
+  document.getElementById('essayTitle').addEventListener('input', updateWritingMetadata);
+  document.getElementById('closeReading').addEventListener('click', hideReadingModal);
+  document.getElementById('editEssay').addEventListener('click', () => {
+    const modal = document.getElementById('readingModal');
+    const essay = {
+      id: modal.dataset.essayId,
+      title: modal.dataset.essayTitle,
+      content: modal.dataset.essayContent
+    };
+    closeReadingModalSilent();
+    showWritingModal(essay);
+  });
+  document.getElementById('deleteEssay').addEventListener('click', () => {
+    const essayId = document.getElementById('readingModal').dataset.essayId;
+    closeReadingModalSilent();
+    showConfirmModal(essayId);
+  });
+  document.getElementById('confirmDelete').addEventListener('click', handleDelete);
+  document.getElementById('cancelDelete').addEventListener('click', hideConfirmModal);
+  document.getElementById('overlay').addEventListener('click', () => {
+    if (document.getElementById('writingModal').classList.contains('active')) hideWritingModal();
+    if (document.getElementById('readingModal').classList.contains('active')) hideReadingModal();
+    if (document.getElementById('confirmModal').classList.contains('active')) hideConfirmModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('confirmModal').classList.contains('active')) hideConfirmModal();
+      else if (document.getElementById('writingModal').classList.contains('active')) hideWritingModal();
+      else if (document.getElementById('readingModal').classList.contains('active')) hideReadingModal();
+    }
+  });
+  const searchInput = document.getElementById('searchInput');
+  const debouncedFilter = debounce(() => {
+    const query = searchInput.value;
+    const filtered = filterEssays(essays, query);
+    renderEssayList(filtered);
+  }, 200);
+  searchInput.addEventListener('input', debouncedFilter);
+}
+
+async function handleSave() {
+  const titleInput = document.getElementById('essayTitle');
+  const contentInput = document.getElementById('essayContent');
+  const title = titleInput.value.trim();
+  const content = contentInput.value;
+  if (!content.trim()) { showMemoirToast('请输入内容'); contentInput.focus(); return; }
+  const fullText = title + '\n' + content;
+  const wordCount = countWords(fullText);
+  const charCount = countChars(fullText);
+  const editId = document.getElementById('writingModal').dataset.editId;
+  const saveBtn = document.getElementById('saveEssay');
+  const originalText = saveBtn.textContent;
+  saveBtn.textContent = '保存中...';
+  saveBtn.style.pointerEvents = 'none';
+  saveBtn.style.opacity = '0.6';
+  try {
+    if (editId) { await updateEssay(editId, { title, content, wordCount, charCount }); showMemoirToast('已更新'); }
+    else { await saveEssay({ title, content, wordCount, charCount }); showMemoirToast('已保存'); }
+    hideWritingModal();
+    showLoading();
+    essays = await fetchEssays();
+    renderEssayList(essays);
+  } catch (err) {
+    console.error('Save failed:', err);
+    showMemoirToast('保存失败，请重试');
+  } finally {
+    saveBtn.textContent = originalText;
+    saveBtn.style.pointerEvents = '';
+    saveBtn.style.opacity = '';
+  }
+}
+
+async function handleDelete() {
+  const essayId = document.getElementById('confirmModal').dataset.essayId;
+  if (!essayId) return;
+  const passwordInput = document.getElementById('deletePassword');
+  if (passwordInput.value !== 'woshisb') { showMemoirToast('删除失败'); return; }
+  const confirmBtn = document.getElementById('confirmDelete');
+  const originalText = confirmBtn.textContent;
+  confirmBtn.textContent = '删除中...';
+  confirmBtn.style.pointerEvents = 'none';
+  try {
+    await deleteEssay(essayId);
+    showMemoirToast('已删除');
+    hideConfirmModal();
+    showLoading();
+    essays = await fetchEssays();
+    renderEssayList(essays);
+  } catch (err) {
+    console.error('Delete failed:', err);
+    showMemoirToast('删除失败，请重试');
+  } finally {
+    confirmBtn.textContent = originalText;
+    confirmBtn.style.pointerEvents = '';
+  }
+}
+
+/* ============================================================
+   TREEHOLE (空树洞) SCRIPTS
+   ============================================================ */
+(function() {
+  const TH_SUPABASE_URL = 'https://klkktsigjelowtiqssho.supabase.co';
+  const TH_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtsa2t0c2lnamVsb3d0aXFzc2hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NTE1NTgsImV4cCI6MjA5NjEyNzU1OH0.KDPBA0yLahvR3EgANiBRdYsXmi1_MgjitDzF0mKf5xc';
+  const thDb = supabase.createClient(TH_SUPABASE_URL, TH_SUPABASE_KEY);
+
+  const CARD_TONES = ['white', 'cool', 'sage', 'mist'];
+  let thEntries = [];
+  let thSearchQuery = '';
+  let thDeleteTimer = null;
+  let thPendingDeleteId = null;
+  let thUndoEntry = null;
+
+  async function thLoad() {
+    try {
+      const { data, error } = await thDb
+        .from('treehole_entries')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      thEntries = data || [];
+    } catch (e) {
+      console.error('树洞加载失败 — 请检查 Supabase treehole_entries 表是否存在、RLS 是否允许 anon select:', e);
+      thEntries = [];
+    }
+  }
+
+  async function thSaveEntry(entry) {
+    const { error } = await thDb.from('treehole_entries').insert({
+      id: entry.id, content: entry.content, time: entry.time, tone: entry.tone
+    });
+    if (error) throw error;
+  }
+
+  async function thRemoveEntry(id) {
+    const { error } = await thDb.from('treehole_entries').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  function thFormatTime(iso) {
+    const d = new Date(iso);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return y + '年' + m + '月' + day + '日 ' + h + ':' + min;
+  }
+
+  function thFormatRelative(iso) {
+    const now = Date.now();
+    const then = new Date(iso).getTime();
+    const diff = now - then;
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return '刚刚';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return min + ' 分钟前';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr + ' 小时前';
+    const day = Math.floor(hr / 24);
+    if (day < 7) return day + ' 天前';
+    if (day < 30) return Math.floor(day / 7) + ' 周前';
+    if (day < 365) return Math.floor(day / 30) + ' 个月前';
+    return Math.floor(day / 365) + ' 年前';
+  }
+
+  function thGetSearchText(entry) {
+    return [
+      entry.content,
+      thFormatTime(entry.time),
+      thFormatRelative(entry.time),
+      new Date(entry.time).getFullYear().toString(),
+      (new Date(entry.time).getMonth() + 1) + '月',
+      new Date(entry.time).getDate() + '日',
+      String(new Date(entry.time).getHours()).padStart(2,'0') + ':' + String(new Date(entry.time).getMinutes()).padStart(2,'0')
+    ].join(' ').toLowerCase();
+  }
+
+  function thMatchesEntry(entry, query) {
+    return thGetSearchText(entry).indexOf(query) !== -1;
+  }
+
+  function thHighlight(text, query) {
+    if (!query.trim()) return escapeHTML(text);
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp('(' + escaped + ')', 'gi');
+    return escapeHTML(text).replace(re, '<mark>$1</mark>');
+  }
+
+  const thEntriesEl = document.getElementById('treeholeEntries');
+  const thEntryCount = document.getElementById('treeholeEntryCount');
+  const thSearchHint = document.getElementById('treeholeSearchHint');
+
+  function thRender() {
+    const q = thSearchQuery.trim().toLowerCase();
+    let filtered = thEntries;
+    if (q) {
+      filtered = thEntries.filter(function(e) { return thMatchesEntry(e, q); });
+      thSearchHint.classList.add('hidden');
+    } else {
+      thSearchHint.classList.remove('hidden');
+    }
+    thEntryCount.textContent = thEntries.length;
+    if (thEntries.length === 0) {
+      // Show empty-state when there are no entries
+      document.getElementById('treeholeEmptyState').classList.add('visible');
+      thEntriesEl.innerHTML = '';
+      // Keep search disabled when truly empty (no entries at all)
+      thSearchInput.style.opacity = '0.5';
+      thSearchInput.disabled = true;
+      thSearchHint.style.opacity = '0.5';
+      return;
+    }
+    // Hide empty-state and re-enable search when entries exist
+    document.getElementById('treeholeEmptyState').classList.remove('visible');
+    thSearchInput.style.opacity = '';
+    thSearchInput.disabled = false;
+    thSearchHint.style.opacity = '';
+    if (filtered.length === 0 && q) {
+      thEntriesEl.innerHTML =
+        '<div style="text-align:center;padding:40px 20px">' +
+        '<p style="font-size:0.85rem;color:rgba(180,160,130,0.3);letter-spacing:0.08em">没有找到与「' + escapeHTML(thSearchQuery.trim()) + '」相关的内容</p>' +
+        '</div>';
+      return;
+    }
+    thEntriesEl.innerHTML = filtered.map(function(e) {
+      var isDimmed = q && !thMatchesEntry(e, q);
+      var html = '';
+      html += '<div class="th-entry-card' + (isDimmed ? ' dimmed' : '') + '" data-tone="' + e.tone + '" data-id="' + e.id + '">';
+      html += '  <div class="th-entry-content">' + thHighlight(e.content, thSearchQuery) + '</div>';
+      html += '  <div class="th-entry-meta">';
+      html += '    <span class="th-entry-time" title="' + thFormatTime(e.time) + '">' + thFormatRelative(e.time) + ' · ' + thFormatTime(e.time) + '</span>';
+      html += '    <button class="th-entry-delete" data-id="' + e.id + '">删除</button>';
+      html += '  </div>';
+      html += '</div>';
+      return html;
+    }).join('');
+  }
+
+  async function thAddEntry(content) {
+    var entry = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      content: content.trim(),
+      time: new Date().toISOString(),
+      tone: CARD_TONES[thEntries.length % CARD_TONES.length]
+    };
+    try {
+      await thSaveEntry(entry);
+      thEntries.unshift(entry);
+      thRender();
+      thEntriesEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      console.error('树洞保存失败 — 请检查 Supabase treehole_entries 表是否存在、RLS 是否允许 anon insert:', e);
+      thShowToast('保存失败，请检查网络或数据库配置');
+    }
+  }
+
+  function thConfirmDelete(id) {
+    var btn = document.querySelector('.th-entry-delete[data-id="' + id + '"]');
+    if (!btn) return;
+    if (thPendingDeleteId === id) { thPerformDelete(id); return; }
+    if (thPendingDeleteId && thPendingDeleteId !== id) thResetDeleteButton(thPendingDeleteId);
+    thPendingDeleteId = id;
+    btn.textContent = '确认删除？';
+    btn.classList.add('confirm');
+    clearTimeout(thDeleteTimer);
+    thDeleteTimer = setTimeout(function() { thResetDeleteButton(id); }, 3000);
+  }
+
+  function thResetDeleteButton(id) {
+    var btn = document.querySelector('.th-entry-delete[data-id="' + id + '"]');
+    if (btn) { btn.textContent = '删除'; btn.classList.remove('confirm'); }
+    if (thPendingDeleteId === id) thPendingDeleteId = null;
+  }
+
+  async function thPerformDelete(id) {
+    var entry = thEntries.find(function(e) { return e.id === id; });
+    if (!entry) return;
+    try {
+      await thRemoveEntry(id);
+      thEntries = thEntries.filter(function(e) { return e.id !== id; });
+      thUndoEntry = entry;
+      thRender();
+      thShowToast('已删除 —— <button class="th-undo-btn" id="treeholeUndoBtn">撤销</button>');
+      thBindUndoBtn();
+    } catch (e) {
+      thShowToast('删除失败，请检查网络');
+    }
+  }
+
+  var thToastEl = document.getElementById('treeholeToast');
+  var thToastTimer = null;
+
+  function thShowToast(msg) {
+    clearTimeout(thToastTimer);
+    thToastEl.innerHTML = msg;
+    thToastEl.classList.add('show');
+    thToastTimer = setTimeout(function() {
+      thToastEl.classList.remove('show');
+      thUndoEntry = null;
+    }, 5000);
+  }
+
+  function thBindUndoBtn() {
+    var btn = document.getElementById('treeholeUndoBtn');
+    if (!btn) return;
+    btn.addEventListener('click', async function() {
+      if (thUndoEntry) {
+        try {
+          await thSaveEntry(thUndoEntry);
+          thEntries.unshift(thUndoEntry);
+          thUndoEntry = null;
+          thRender();
+          thToastEl.classList.remove('show');
+          clearTimeout(thToastTimer);
+        } catch (e) {
+          thShowToast('撤销失败');
+        }
+      }
+    });
+  }
+
+  /* Treehole Events */
+  var thWhisperInput = document.getElementById('treeholeWhisperInput');
+  var thWhisperSubmit = document.getElementById('treeholeWhisperSubmit');
+  var thWhisperActions = document.getElementById('treeholeWhisperActions');
+  var thCharCount = document.getElementById('treeholeCharCount');
+  var thSearchInput = document.getElementById('treeholeSearchInput');
+  var thSearchClear = document.getElementById('treeholeSearchClear');
+
+  thWhisperInput.addEventListener('input', function() {
+    var len = thWhisperInput.value.length;
+    thCharCount.textContent = len + ' / 5000';
+    if (len > 0) thWhisperActions.classList.add('active');
+    else thWhisperActions.classList.remove('active');
+    thWhisperInput.style.height = 'auto';
+    thWhisperInput.style.height = Math.min(thWhisperInput.scrollHeight, 240) + 'px';
+  });
+
+  thWhisperSubmit.addEventListener('click', function() {
+    var content = thWhisperInput.value.trim();
+    if (!content) return;
+    thAddEntry(content);
+    thWhisperInput.value = '';
+    thWhisperInput.style.height = 'auto';
+    thWhisperActions.classList.remove('active');
+    thCharCount.textContent = '0 / 5000';
+    thWhisperInput.focus();
+  });
+
+  thWhisperInput.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      thWhisperSubmit.click();
+    }
+  });
+
+  thSearchInput.addEventListener('input', function() {
+    thSearchQuery = thSearchInput.value;
+    if (thSearchQuery) thSearchClear.classList.add('visible');
+    else thSearchClear.classList.remove('visible');
+    thRender();
+  });
+
+  thSearchClear.addEventListener('click', function() {
+    thSearchInput.value = '';
+    thSearchQuery = '';
+    thSearchClear.classList.remove('visible');
+    thRender();
+    thSearchInput.focus();
+  });
+
+  thEntriesEl.addEventListener('click', function(e) {
+    var btn = e.target.closest('.th-entry-delete');
+    if (!btn) { if (thPendingDeleteId) thResetDeleteButton(thPendingDeleteId); return; }
+    thConfirmDelete(btn.dataset.id);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (thPendingDeleteId && !e.target.closest('.th-entry-delete')) thResetDeleteButton(thPendingDeleteId);
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && thPendingDeleteId) thResetDeleteButton(thPendingDeleteId);
+  });
+
+  /* Treehole Init */
+  async function thInit() {
+    await thLoad();
+    thRender();
+  }
+
+  thInit();
+})();
+
+/* ============================================================
+   VIEW SWITCHING LOGIC
+   ============================================================ */
+(function() {
+  var body = document.body;
+  var switchToTreehole = document.getElementById('switchToTreehole');
+  var switchToMemoir = document.getElementById('switchToMemoir');
+  var newEssayBtn = document.getElementById('newEssayBtn');
+
+  switchToTreehole.addEventListener('click', function() {
+    body.setAttribute('data-view', 'treehole');
+    switchToTreehole.style.display = 'none';
+    switchToMemoir.style.display = 'flex';
+  });
+
+  switchToMemoir.addEventListener('click', function() {
+    body.setAttribute('data-view', 'memoir');
+    switchToMemoir.style.display = 'none';
+    switchToTreehole.style.display = 'flex';
+  });
+})();
+
+/* ============================================================
+   MEMOIR INIT (on DOMContentLoaded)
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', memoirInit);
+</script>
+</body>
+</html>
